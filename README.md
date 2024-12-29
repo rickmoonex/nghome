@@ -16,7 +16,7 @@ That's a good and valid question, but I don't really care.
 This projects serves as big learning opportunity for me,
 so I don't really care if you end up using it or not.
 
-This will probably be WIP for a long time, so if your brave
+This will probably be WIP for a long time, so if you're brave
 enough to eventually try it out, I wish you the best of luck.
 
 ## Design choices
@@ -27,7 +27,9 @@ them, no shame there really. Those are great systems on their own,
 so no need to reinvent an open-source wheel.
 
 Oh yeah, I'm writing this in Golang btw. Because Python's
-performance is quite shit. And I like Go...
+performance at scale is shit in my opinion.
+(Like why does it take 5 min to restart Home Assistant... It's not THAT complex...)
+And I like Go...
 
 ## Issues?
 
