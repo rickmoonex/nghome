@@ -60,7 +60,7 @@ func (c *MigrationClient) AutoMigrate(path string) error {
 
 		scripts, index := filterMigrationMap(migMap, version)
 
-		for i := range index {
+		for _, i := range index {
 			err := c.runMigrationScript(collection, scripts[i])
 			if err != nil {
 				return err
