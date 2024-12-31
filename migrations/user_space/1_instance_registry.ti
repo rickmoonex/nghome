@@ -17,4 +17,8 @@ set_type("Instance", {
   friendly_name: "str"
 });
 
-mod_type("UserSpace", "add", "InstanceRegistry", "{Instance}");
+set_type("InstanceRegistry", {
+  instances: "{Instance}"
+});
+
+mod_type("UserSpace", "add", "instance_registry", "InstanceRegistry");

@@ -1,0 +1,31 @@
+mod_type("InstanceRegistry",  "add", "get_instance", |this, filter_closure| {
+  "Retrieve an instance using a filter closure";
+  type_assert(filter_closure, "closure");
+
+  this.instances.find(filter_closure);
+});
+
+mod_type("InstanceRegistry", "add", "get_instance_by_id", |this, instance_id| {
+  "Retrieve an instance using it's instance_id";
+  type_assert(instance_id, "str");
+
+  this.get_instance(|e| e.instance_id == instance_id);
+});
+
+mod_type("InstanceRegistry", "add", "change_instance_id", |this, instance_id, new_instance_id| {
+  "Change an instance's id";
+  type_assert(instance_id, "str");
+  type_assert(new_instance_id, "str");
+
+  if (this.instance_id_exists(new_instance_id) == true) {
+    raise(`instance with id {new_instance_id} already exists`);
+  } else {
+    instance = this.get_instance_by_id(instance_id);
+
+    check_instance_id_type(instance.type, new_instance_id);
+
+    instance.instance_id = new_instance_id;
+
+    return instance;
+  }
+});

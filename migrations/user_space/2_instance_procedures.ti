@@ -1,0 +1,49 @@
+mod_type("InstanceRegistry", "add", "instance_id_exists", |this, instance_id| {
+  "Check if an instance with a given instance_id already exists";
+  type_assert(instance_id, "str");
+
+  found = this.instances.find(|e| e.instance_id == instance_id);
+
+  if (found == nil) {
+    return false;
+  } else {
+    return true;
+  }
+});
+
+new_procedure("check_instance_id_type", |type, instance_id| {
+  "Check if the instance_id adheres to the type";
+  type_assert(type, "InstanceType");
+  type_assert(instance_id, "str");
+
+  split_string = instance_id.split(".");
+
+  if (split_string[0] != type.value()) {
+    raise(`Instance id '{instance_id}' is not prefixed correctly for type: '{type.name()}'`);
+  } else {
+    return nil;
+  }
+});
+
+mod_type("InstanceRegistry", "add", "add_instance", |this, type, instance_id, friendly_name| {
+  "Add a new instance to the registry";
+  type_assert(type, "InstanceType");
+  type_assert(instance_id, "str");
+  type_assert(friendly_name, "str");
+
+  check_instance_id_type(type, instance_id);
+
+  if (this.instance_id_exists(instance_id) == true) {
+    raise(`Instance with id '{instance_id}' already exists`);
+  } else {
+    new_instance = Instance{
+      type: type,
+      instance_id: instance_id,
+      friendly_name: friendly_name
+    };
+
+    this.instances.add(new_instance);
+
+    return new_instance;
+  }
+});
