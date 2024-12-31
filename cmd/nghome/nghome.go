@@ -18,9 +18,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db := database.Client{Conn: conn}
+	db := &database.Client{Conn: conn}
+	migC := db.GetMigrationClient()
 
-	if err := db.AutoMigrate("./migrations"); err != nil {
+	if err := migC.AutoMigrate("./migrations"); err != nil {
 		log.Fatal(err)
 	}
 }

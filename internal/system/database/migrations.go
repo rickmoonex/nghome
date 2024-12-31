@@ -16,9 +16,14 @@ var requiredCollections = []string{
 	"user_space",
 }
 
+// MigrationClient is a wrapper around Client to not polute it with all migration logic
+type MigrationClient struct {
+	*Client
+}
+
 // AutoMigrate will automatically handle the migration of the database.
 // It takes in a path to the migrations folder holding the .ti scripts.
-func (c *Client) AutoMigrate(path string) error {
+func (c *MigrationClient) AutoMigrate(path string) error {
 	// Ensure the `db_man` collection exists
 	err := c.ensureCollection("db_man")
 	if err != nil {
@@ -70,9 +75,33 @@ func (c *Client) AutoMigrate(path string) error {
 	return nil
 }
 
+// ensureCollection takes a collection name and makes sure it exists
+func (c *MigrationClient) ensureCollection(name string) error {
+	vars := map[string]interface{}{
+		"name": name,
+	}
+
+	res, err := c.Query("@thingsdb", "has_collection(name);", vars)
+	if err != nil {
+		return err
+	}
+
+	exists, ok := res.(bool)
+	if !ok {
+		return errors.New("could not cast `has_collection` results into bool")
+	}
+
+	if exists {
+		return nil
+	}
+
+	_, err = c.Query("@thingsdb", "new_collection(name);", vars)
+	return err
+}
+
 // runMigrationScript takes a migration script content and a collection name,
 // it then runs this script on the ThingsDB server.
-func (c *Client) runMigrationScript(collectionName, scriptContent string) error {
+func (c *MigrationClient) runMigrationScript(collectionName, scriptContent string) error {
 	scope := fmt.Sprintf("//%s", collectionName)
 
 	_, err := c.Query(scope, scriptContent, nil)
@@ -92,7 +121,7 @@ func (c *Client) updateMigrationVersion(collectionName string, version int) erro
 }
 
 // getMigrationVersion takes in a collection name and returns the current migration version for that collection
-func (c *Client) getMigrationVersion(collectionName string) (int, error) {
+func (c *MigrationClient) getMigrationVersion(collectionName string) (int, error) {
 	thingName := genMigrationVersionThingName(collectionName)
 
 	res, err := c.Query("//db_man", fmt.Sprintf(".%s", thingName), nil)
@@ -109,7 +138,7 @@ func (c *Client) getMigrationVersion(collectionName string) (int, error) {
 }
 
 // createMigrationVersionThings will create a new thing in the `db_man` collection to keep track of migrations
-func (c *Client) createMigrationVersionThings(collectionNames []string) error {
+func (c *MigrationClient) createMigrationVersionThings(collectionNames []string) error {
 	for _, v := range collectionNames {
 		thingName := genMigrationVersionThingName(v)
 
