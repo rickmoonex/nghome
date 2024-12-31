@@ -53,14 +53,14 @@ func (c *Client) AutoMigrate(path string) error {
 			return err
 		}
 
-		scripts := filterMigrationMap(migMap, version)
+		scripts, index := filterMigrationMap(migMap, version)
 
-		for k, v := range scripts {
-			err := c.runMigrationScript(collection, v)
+		for i := range index {
+			err := c.runMigrationScript(collection, scripts[i])
 			if err != nil {
 				return err
 			}
-			err = c.updateMigrationVersion(collection, k)
+			err = c.updateMigrationVersion(collection, i)
 			if err != nil {
 				return err
 			}

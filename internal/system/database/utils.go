@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -43,7 +44,8 @@ func createMigrationMap(path string) (map[int]string, error) {
 }
 
 // filterMigrationMap takes in the migration map[int]string and a version. It then returns a list of scripts that need to be run.
-func filterMigrationMap(migrationMap map[int]string, currentVersion int) map[int]string {
+// It will also return a sorted list of the map's keys, this can be used to run the migrations in the correct order.
+func filterMigrationMap(migrationMap map[int]string, currentVersion int) (map[int]string, []int) {
 	scripts := map[int]string{}
 
 	for k, v := range migrationMap {
@@ -54,5 +56,13 @@ func filterMigrationMap(migrationMap map[int]string, currentVersion int) map[int
 		scripts[k] = v
 	}
 
-	return scripts
+	index := make([]int, 0, len(scripts))
+
+	for k := range scripts {
+		index = append(index, k)
+	}
+
+	slices.Sort(index)
+
+	return scripts, index
 }
