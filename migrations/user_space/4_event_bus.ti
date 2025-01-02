@@ -1,0 +1,36 @@
+set_type("Event", {
+  unique_id: "#",
+  type: "str",
+  data: "str",
+  time_fired: "datetime",
+});
+
+set_type("EventBus", {
+  events_recorded: "{Event}",
+  event_room: "room"
+});
+
+mod_type("UserSpace", "add", "event_bus", "EventBus");
+
+mod_type("EventBus", "add", "get_room_id", |this| {
+  "Return the event room id";
+
+  this.event_room.id();
+});
+
+mod_type("EventBus", "add", "fire_event", |this, type, data| {
+  "Fire an event on the event bus";
+  type_assert(type, "str");
+  type_assert(data, "str");
+
+  new_event = Event{
+    type: type,
+    data: data
+  };
+
+  this.events_recorded.add(new_event);
+
+  this.event_room.emit(type, data_thing);
+
+  return new_event;
+});

@@ -1,10 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/rickmoonex/nghome/internal/system/database"
+	"github.com/rickmoonex/nghome/internal/system/eventbus"
 )
+
+func onMessage(args []interface{}) {
+	fmt.Println("EVENT!")
+}
 
 func main() {
 	db, err := database.InitializeClient("localhost", 9200, "K5N2NM2hcfD0FtPIQg5ATb")
@@ -17,4 +24,13 @@ func main() {
 	if err := migC.AutoMigrate("./migrations"); err != nil {
 		log.Fatal(err)
 	}
+
+	eb, err := eventbus.InitEventBus()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	eb.Listen("state_changed", onMessage)
+
+	time.Sleep(time.Second * 60)
 }
