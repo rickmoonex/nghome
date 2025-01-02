@@ -1,12 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/rickmoonex/nghome/internal/system/database"
 	"github.com/rickmoonex/nghome/internal/system/eventbus"
+	"github.com/rickmoonex/nghome/internal/system/statemachine"
 )
 
 func onMessage(args []interface{}) {
@@ -37,5 +38,12 @@ func main() {
 	eb.Listen("state_changed", onMessage)
 	eb.Listen("state_updated", onUpdated)
 
-	time.Sleep(time.Second * 600)
+	entry, err := statemachine.AddEntry("switch.test", "on", nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	entryJs, _ := json.Marshal(entry)
+
+	fmt.Println(string(entryJs))
 }

@@ -14,27 +14,28 @@ set_type("StateMachine", {
 
 mod_type("UserSpace", "add", "state_machine", "StateMachine");
 
-mod_type("StateMachine", "add", "get_entry_by_timestamp", |this, instance, last_updated| {
-  "Get a state entry by it's instance and last_updated value";
-  type_assert(instance, "Instance");
-  type_assert(last_updated, "datetime");
+mod_type("StateMachine", "add", "last_states", "[]");
 
-  return this.states.find(|e| (e.instance == instance && e.last_updated == last_updated));
+mod_type("StateMachine", "add", "get_last_state", |this, instance| {
+  "Get the latest entry for a specific instance";
+  type_assert(instance, "Instance");
+
+  last_entry = this.last_states.find(|e| e[0] == instance);
+  
+  if (last_entry == nil) {
+    return nil
+  };
+
+  return last_entry[1];
 });
 
-mod_type("StateMachine", "add", "get_last_entry", |this, instance| {
-  "Get the latest entry for a specific entry id";
+mod_type("StateMachine", "add", "update_last_state", |this, instance, state| {
+  "Set a new last state entry";
   type_assert(instance, "Instance");
+  type_assert(state, "State");
 
-  entry_ts = [];
-  this.states.each(|e| e.instance == instance && entry_ts.push(e.last_updated));
-
-  if (entry_ts.len() < 1) {
-    return nil;
-  } else {
-    sorted = entry_ts.sort(true);
-    return this.get_entry_by_timestamp(instance, sorted[0]);
-  }
+  this.last_states.remove(|e| e[0] == instance);
+  this.last_states.push([instance, state]);
 });
 
 mod_type("StateMachine", "add", "add_entry", |this, instance, state, attributes| {
@@ -43,7 +44,7 @@ mod_type("StateMachine", "add", "add_entry", |this, instance, state, attributes|
   type_assert(state, "str");
   type_assert(attributes, "str");
 
-  old_state = this.get_last_entry(instance);
+  old_state = this.get_last_state(instance);
 
   if (old_state != nil && old_state.state == state && old_state.attributes == attributes) {
     last_changed = nil;
@@ -62,12 +63,11 @@ mod_type("StateMachine", "add", "add_entry", |this, instance, state, attributes|
   .event_bus.fire_event("state_updated", json_dump(new_state));
 
   this.states.add(new_state);
+  this.update_last_state(instance, new_state);
 
   if (last_changed != nil) {
     .event_bus.fire_event("state_changed", json_dump(new_state));
-    return new_state;
-  } else {
-    return new_state;
-  }
-});
+  };
 
+  return new_state;
+});
