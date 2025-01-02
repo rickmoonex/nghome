@@ -10,7 +10,11 @@ import (
 )
 
 func onMessage(args []interface{}) {
-	fmt.Println("EVENT!")
+	fmt.Println("changed")
+}
+
+func onUpdated(args []interface{}) {
+	fmt.Println("updated")
 }
 
 func main() {
@@ -31,6 +35,7 @@ func main() {
 	}
 
 	eb.Listen("state_changed", onMessage)
+	eb.Listen("state_updated", onUpdated)
 
-	time.Sleep(time.Second * 60)
+	time.Sleep(time.Second * 600)
 }

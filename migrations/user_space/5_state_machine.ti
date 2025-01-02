@@ -1,0 +1,73 @@
+set_type("State", {
+  unique_id: "#",
+  instance: "Instance",
+  state: "str",
+  attributes: "str",
+  last_changed: "datetime?",
+  last_updated: "datetime",
+  old_state: "State?"
+});
+
+set_type("StateMachine", {
+  states: "{State}"
+});
+
+mod_type("UserSpace", "add", "state_machine", "StateMachine");
+
+mod_type("StateMachine", "add", "get_entry_by_timestamp", |this, instance, last_updated| {
+  "Get a state entry by it's instance and last_updated value";
+  type_assert(instance, "Instance");
+  type_assert(last_updated, "datetime");
+
+  return this.states.find(|e| (e.instance == instance && e.last_updated == last_updated));
+});
+
+mod_type("StateMachine", "add", "get_last_entry", |this, instance| {
+  "Get the latest entry for a specific entry id";
+  type_assert(instance, "Instance");
+
+  entry_ts = [];
+  this.states.each(|e| e.instance == instance && entry_ts.push(e.last_updated));
+
+  if (entry_ts.len() < 1) {
+    return nil;
+  } else {
+    sorted = entry_ts.sort(true);
+    return this.get_entry_by_timestamp(instance, sorted[0]);
+  }
+});
+
+mod_type("StateMachine", "add", "add_entry", |this, instance, state, attributes| {
+  "Add a new state entry for a specific instance";
+  type_assert(instance, "Instance");
+  type_assert(state, "str");
+  type_assert(attributes, "str");
+
+  old_state = this.get_last_entry(instance);
+
+  if (old_state != nil && old_state.state == state && old_state.attributes == attributes) {
+    last_changed = nil;
+  } else {
+    last_changed = datetime();
+  };
+
+  new_state = State{
+    instance: instance,
+    state: state,
+    attributes: attributes,
+    old_state: old_state,
+    last_changed: last_changed
+  };
+
+  .event_bus.fire_event("state_updated", json_dump(new_state));
+
+  this.states.add(new_state);
+
+  if (last_changed != nil) {
+    .event_bus.fire_event("state_changed", json_dump(new_state));
+    return new_state;
+  } else {
+    return new_state;
+  }
+});
+
