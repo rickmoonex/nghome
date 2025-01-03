@@ -4,8 +4,11 @@ import (
 	"github.com/rickmoonex/nghome/internal/system/database"
 )
 
+// InstanceRegistry
+type InstanceRegistry struct{}
+
 // AddInstance adds a new instance to the registry
-func AddInstance(instanceType InstanceType, instanceId string, friendlyName string) (*Instance, error) {
+func (r *InstanceRegistry) RegisterInstance(instanceType InstanceType, instanceId string, friendlyName string) (*Instance, error) {
 	client, err := database.GetClient()
 	if err != nil {
 		return nil, err
@@ -19,7 +22,7 @@ func AddInstance(instanceType InstanceType, instanceId string, friendlyName stri
 
 	var resInstance Instance
 
-	res, err := client.Query("//user_space", `wse(); .instance_registry.add_instance(enum("InstanceType", type), instance_id, friendly_name);`, vars)
+	res, err := client.Query("//user_space", `wse(); .instance_registry.register_instance(enum("InstanceType", type), instance_id, friendly_name);`, vars)
 	if err != nil {
 		return nil, err
 	}
@@ -32,7 +35,7 @@ func AddInstance(instanceType InstanceType, instanceId string, friendlyName stri
 }
 
 // GetInstanceById uses the InstanceId to lookup an item in the Instance Registry
-func GetInstanceById(instanceId string) (*Instance, error) {
+func (r *InstanceRegistry) GetInstanceById(instanceId string) (*Instance, error) {
 	client, err := database.GetClient()
 	if err != nil {
 		return nil, err
@@ -57,7 +60,7 @@ func GetInstanceById(instanceId string) (*Instance, error) {
 }
 
 // ChangeInstanceId uses to InstanceId to lookup an instance and update it's instance_id
-func ChangeInstanceId(instanceId, newInstanceId string) (*Instance, error) {
+func (r *InstanceRegistry) ChangeInstanceId(instanceId, newInstanceId string) (*Instance, error) {
 	client, err := database.GetClient()
 	if err != nil {
 		return nil, err

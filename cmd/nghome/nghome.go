@@ -1,13 +1,14 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/rickmoonex/nghome/internal/system/database"
 	"github.com/rickmoonex/nghome/internal/system/eventbus"
-	"github.com/rickmoonex/nghome/internal/system/statemachine"
+	"github.com/rickmoonex/nghome/pkg/framework/helper"
+	"github.com/rickmoonex/nghome/pkg/framework/instance"
 )
 
 func onMessage(args []interface{}) {
@@ -38,12 +39,21 @@ func main() {
 	eb.Listen("state_changed", onMessage)
 	eb.Listen("state_updated", onUpdated)
 
-	entry, err := statemachine.AddEntry("switch.test", "on", nil)
+	testSwitch := instance.SwitchInstance{}
+
+	ctx := &helper.NGContext{}
+
+	err = testSwitch.Init(ctx, map[string]interface{}{
+		"name": "test_switch_2",
+	})
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	entryJs, _ := json.Marshal(entry)
+	time.Sleep(time.Second * 5)
 
-	fmt.Println(string(entryJs))
+	testSwitch.TurnOn()
+
+	for {
+	}
 }

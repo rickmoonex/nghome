@@ -1,0 +1,30 @@
+mod_type("Instance", "add", "domain", "str?");
+
+set_type("Integration", {
+  unique_id: "#",
+  domain: "str"
+});
+
+set_type("IntegrationRegistry", {
+  integrations: "{Integration}"
+});
+
+mod_type("UserSpace", "add", "integration_registry", "IntegrationRegistry");
+
+mod_type("IntegrationRegistry", "add", "domain_exists", |this, domain| {
+  "Check if a domain is registered with an integration";
+  type_assert(domain, "str");
+
+  return this.integrations.find(|e| e.domain == domain);
+});
+
+mod_type("IntegrationRegistry", "add", "register_integration", |this, domain| {
+  "Register a new integration";
+  type_assert(domain, "str");
+
+  integration = Integration{
+    domain: domain
+  };
+
+  return this.integrations.add(integration);
+});

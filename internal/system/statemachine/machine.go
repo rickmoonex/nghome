@@ -7,8 +7,11 @@ import (
 	"github.com/rickmoonex/nghome/internal/system/database"
 )
 
+// StateMachine
+type StateMachine struct{}
+
 // GetLastState takes in an instance id and returns the last known state of that instance
-func GetLastState(instanceId string) (*State, error) {
+func (s *StateMachine) GetLastState(instanceId string) (*State, error) {
 	vars := map[string]interface{}{
 		"instance_id": instanceId,
 	}
@@ -38,7 +41,7 @@ func GetLastState(instanceId string) (*State, error) {
 }
 
 // AddEntry adds a new entry to the state machine
-func AddEntry(instanceId, state string, attributes map[string]interface{}) (*State, error) {
+func (s *StateMachine) AddEntry(instanceId, state string, attributes map[string]interface{}) (*State, error) {
 	if attributes == nil {
 		attributes = map[string]interface{}{}
 	}

@@ -1,0 +1,14 @@
+mod_type("InstanceRegistry", "add", "register_instance", |this, type, instance_id, friendly_name| {
+  "Add a new instance if the id is not registered, otherwise return it";
+  type_assert(type, "InstanceType");
+  type_assert(instance_id, "str");
+  type_assert(friendly_name, "str");
+
+  found_instance = this.get_instance_by_id(instance_id);
+
+  if (found_instance != nil) {
+    return found_instance;
+  } else {
+    return this.add_instance(type, instance_id, friendly_name);
+  };
+});
